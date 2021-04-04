@@ -1,0 +1,22 @@
+version: '3'
+services:
+        xen-orchestra:
+                image: lautrecofcarim/alpine-xoa:latest
+                container_name: xoa
+                user: node
+                ports:
+                     - "8000:80"
+                depends_on:
+                     - redis
+                environment:
+                     - NODE_ENV=production
+                volumes:
+                     - ./xodata:/var/lib/xo-server/data
+        redis:
+                container_name: redis
+                image: redis:alpine
+                ports:
+                     - "6379:6379"
+                command: redis-server --appendonly yes
+                volumes:
+                       - "./xoredisdata:/data"

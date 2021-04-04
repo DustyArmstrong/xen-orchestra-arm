@@ -1,5 +1,7 @@
 # Xen Orchestra ARM (Raspberry Pi)
 
+[![](https://img.shields.io/badge/xen--orchestra-master-green.svg)](https://xen-orchestra.com) ![](https://img.shields.io/docker/image-size/lautrecofcarim/alpine-xoa)
+
 <img src="http://i.imgur.com/tRffA5y.png" width="150"> <img src="https://i.imgur.com/06fRgbd.png" width="100">
 
 
@@ -48,3 +50,5 @@ services:
 ## With thanks
 
 Project contains aspects of https://github.com/Ezka77/xen-orchestra-ce and https://github.com/interlegis/docker-xo to get a working system.
+
+Help is welcomed and appreciated!

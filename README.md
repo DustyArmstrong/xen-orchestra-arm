@@ -28,7 +28,7 @@ services:
                 environment:
                      - NODE_ENV=production
                 volumes:
-                     - ./xodata:/var/lib/xo-server/data
+                     - "./xodata:/var/lib/xo-server/data"
         redis:
                 container_name: redis
                 image: redis:alpine
@@ -36,7 +36,7 @@ services:
                      - "6379:6379"
                 command: redis-server --appendonly yes
                 volumes:
-                       - ./xoredisdata:/data
+                       - "./xoredisdata:/data"
 ```
 
 ## Tags

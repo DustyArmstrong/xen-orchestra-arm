@@ -47,7 +47,7 @@ services:
 
 `:aarch64` - Arm 64bit
 
-## With thanks
+## With Thanks
 
 Project contains aspects of https://github.com/Ezka77/xen-orchestra-ce and https://github.com/interlegis/docker-xo to get a working system.
 

@@ -40,7 +40,7 @@ RUN cd libvhdi && ./synclibs.sh && \
 
 ##LIBVHDI
 
-FROM arm32v7/node:current-alpine3.13
+FROM node:current-alpine3.13
 
 LABEL xo-server=5.7 xo-web=5.7
 

@@ -24,7 +24,7 @@ RUN chmod +x /home/node/xen-orchestra/packages/xo-server/link_plugins.sh && \
 
 
 #LIBVHDI
-FROM arm32v7/node:current-alpine3.13 as build-libvhdi
+FROM node:current-alpine3.13 as build-libvhdi
 
 WORKDIR /home/node
 

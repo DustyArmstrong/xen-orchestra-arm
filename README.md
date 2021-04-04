@@ -36,7 +36,7 @@ services:
                      - "6379:6379"
                 command: redis-server --appendonly yes
                 volumes:
-                       - "./xoredisdata:/data"
+                       - ./xoredisdata:/data
 ```
 
 ## Tags

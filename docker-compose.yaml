@@ -11,7 +11,7 @@ services:
                 environment:
                      - NODE_ENV=production
                 volumes:
-                     - ./xodata:/var/lib/xo-server/data
+                     - "./xodata:/var/lib/xo-server/data"
         redis:
                 container_name: redis
                 image: redis:alpine

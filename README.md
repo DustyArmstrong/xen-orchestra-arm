@@ -47,6 +47,49 @@ services:
 
 `:aarch64` - Arm 64bit
 
+## NGINX Configuration
+
+I'm personally running this with a standalone Nginx container. The docker-compose file is as follows:
+
+```
+version: '3'
+services:
+        nginx:
+             image: nginx:latest
+             container_name: nginx
+             volumes:
+                    - ./ngconf:/etc/nginx/conf.d
+                    - ./ngcerts:/etc/nginx/certs
+             ports:
+                    - 80:80
+                    - 443:443
+```
+
+Place your signed certificates in `/etc/nginx/certs`. Refer to them under `/etc/nginx/conf.d/default.conf`, as below. You will need to modify your DNS to accomodate. 
+
+```
+server {
+        listen 443 ssl;
+        server_name newsslxo.domain.lan;
+
+        ssl_certificate /etc/nginx/certs/xo/xo.crt;
+        ssl_certificate_key /etc/nginx/certs/xo/xo.key;
+
+        ssl_session_cache  builtin:1000  shared:SSL:10m;
+        ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
+        ssl_ciphers HIGH:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;
+        ssl_prefer_server_ciphers on;
+
+        location / {
+        proxy_pass "http://originalxoserver.domain.lan:8000/";
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        }
+}
+```
+
 ## With Thanks
 
 Project contains aspects of https://github.com/Ezka77/xen-orchestra-ce and https://github.com/interlegis/docker-xo to get a working system.

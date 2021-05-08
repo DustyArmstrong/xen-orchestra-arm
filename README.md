@@ -14,7 +14,7 @@ Built for Raspberry Pi 32bit and 64bit.
 
 ## Getting Started
 
-You can get this immediately using this docker-compose file.
+You can get this immediately using this docker-compose file. This brings up the service on port 8000. For SSL, read on.
 
 ```
 version: '3'
@@ -34,8 +34,6 @@ services:
         redis:
                 container_name: redis
                 image: redis:alpine
-                ports:
-                     - "6379:6379"
                 command: redis-server --appendonly yes
                 volumes:
                        - "./xoredisdata:/data"
@@ -47,9 +45,9 @@ services:
 
 `:aarch64` - Arm 64bit
 
-## NGINX Configuration
+## Reverse Proxy HTTPS with NGINX Configuration
 
-I'm personally running this with a standalone Nginx container. The docker-compose file is as follows:
+I'm personally running this with an Nginx container. A shared container network is **required.** The docker-compose file for Nginx is as follows:
 
 ```
 version: '3'
@@ -63,14 +61,43 @@ services:
              ports:
                     - 80:80
                     - 443:443
+networks:
+        default:
+                external:
+                        name: containershare
 ```
 
-Place your signed certificates in `/etc/nginx/certs`. Refer to them under `/etc/nginx/conf.d/default.conf`, as below. You will need to modify your DNS to accomodate. 
+Place your signed certificates in `/etc/nginx/certs`. Refer to them under `/etc/nginx/conf.d/default.conf`, as below. You will need to add IP DNS aliases your DNS server to accomodate. Create the nginx volume folders _before_ starting the container, ideally create the default.conf to some extent (or copy the below). This configuration assumes the certificates have been created and you have a 404 file present under `/ngconf` or `/etc/nginx/conf.d/default.conf/` or it **will not work.**
 
 ```
+map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+}
+
+server {
+        listen 80 default_server;
+        server_name _;
+        return 301 https://$host$request_uri;
+}
+
+server {
+        listen 443 ssl default_server;
+        server_name _;
+
+        ssl_certificate /etc/nginx/certs/raspiserver/raspiserver.crt;
+        ssl_certificate_key /etc/nginx/certs/raspiserver/raspiserverkey.key;
+
+        error_page 404 /better404.html;
+        location = /better404.html {
+                root /etc/nginx/conf.d;
+                internal;
+        }
+}
+
 server {
         listen 443 ssl;
-        server_name newsslxo.domain.lan;
+        server_name xo.your.domain;
 
         ssl_certificate /etc/nginx/certs/xo/xo.crt;
         ssl_certificate_key /etc/nginx/certs/xo/xo.key;
@@ -81,13 +108,42 @@ server {
         ssl_prefer_server_ciphers on;
 
         location / {
-        proxy_pass "http://originalxoserver.domain.lan:8000/";
+        proxy_pass "http://xoa:80/";
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
 
         }
 }
+```
+
+You can modify your docker-compose file for XO to the following, as mapped host ports aren't required under this configuration.
+
+```
+version: '3'
+services:
+        xen-orchestra:
+                image: lautrecofcarim/alpine-xoa:armhf
+                restart: always
+                container_name: xoa
+                user: node
+                depends_on:
+                     - redis
+                environment:
+                     - NODE_ENV=production
+                volumes:
+                     - ./xodata:/var/lib/xo-server/data
+        redis:
+                container_name: redis
+                restart: always
+                image: redis:alpine
+                command: redis-server --appendonly yes
+                volumes:
+                       - "./xoredisdata:/data"
+networks:
+        default:
+               external:
+                       name: containershare
 ```
 
 ## With Thanks

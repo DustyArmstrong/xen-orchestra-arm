@@ -34,6 +34,8 @@ services:
         redis:
                 container_name: redis
                 image: redis:alpine
+                ports:
+                     - "6789:6789"
                 command: redis-server --appendonly yes
                 volumes:
                        - "./xoredisdata:/data"

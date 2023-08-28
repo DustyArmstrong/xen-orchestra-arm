@@ -1,7 +1,7 @@
 version: '3'
 services:
         xen-orchestra:
-                image: lautrecofcarim/alpine-xoa:latest
+                image: lautrecofcarim/alpine-xoa:aarch64latest
                 container_name: xoa
                 user: node
                 ports:

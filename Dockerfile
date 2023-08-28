@@ -1,20 +1,13 @@
-FROM node:current-alpine3.13 as build
-MAINTAINER Dusty
+FROM node:18-alpine3.17 as build
 
 WORKDIR /home/node
 
 RUN apk update && apk upgrade && \
-    apk add --no-cache bash git build-base libstdc++ gcc yarn libpng-dev python2 g++ make libc6-compat curl
+    apk add --no-cache bash git build-base libstdc++ gcc yarn libpng-dev python3 g++ make libc6-compat curl
 
 RUN npm install url-loader --save-dev
 
-RUN git clone -b master --depth 1 http://github.com/vatesfr/xen-orchestra
-
-COPY patches /home/node/xen-orchestra/patches
-
-RUN cd /home/node/xen-orchestra \
-    && git apply patches/gh_issue_redirect.diff \
-    && rm -rf /home/node/xen-orchestra.git /home/node/xen-orchestra/patches
+RUN git clone -b fix_fuse_dependancy_arm --depth 1 http://github.com/vatesfr/xen-orchestra
     
 RUN cd /home/node/xen-orchestra && yarn config set network-timeout 30000000 && yarn && yarn build
 
@@ -24,11 +17,11 @@ RUN chmod +x /home/node/xen-orchestra/packages/xo-server/link_plugins.sh && \
 
 
 #LIBVHDI
-FROM node:current-alpine3.13 as build-libvhdi
+FROM node:18-alpine3.17 as build-libvhdi
 
 WORKDIR /home/node
 
-RUN apk add --no-cache git g++ make bash automake autoconf libtool gettext-dev pkgconf fuse-dev fuse
+RUN apk add --no-cache git g++ make bash automake autoconf libtool gettext-dev pkgconf fuse-dev fuse fuse3 fuse3-dev
 
 RUN git clone https://github.com/libyal/libvhdi.git
 
@@ -40,7 +33,7 @@ RUN cd libvhdi && ./synclibs.sh && \
 
 ##LIBVHDI
 
-FROM node:current-alpine3.13
+FROM node:18-alpine3.17
 
 LABEL xo-server=5.7 xo-web=5.7
 
@@ -57,6 +50,7 @@ RUN apk add --no-cache \
     nfs-utils \
     lvm2 \
     fuse \
+    fuse3 \
     gettext \
     cifs-utils \
     openssl

@@ -10,7 +10,9 @@ This is a repository for a dockerized Xen Orchestra. Build using Alpine as a bas
 
 Currently running XO 5.78.2. 
 
-Built for Raspberry Pi 32bit and 64bit.
+Built for Raspberry Pi 32bit and 64bit. 
+
+**Note - Aug 2023** 32 bit appears to no longer be supported. I have tested the _aarch64_ build and this is current under the _aarch64latest_ tag. The 32 bit build fails with a memory segmentation fault - the last working config is under the _armhf_ tag.
 
 ## Getting Started
 
@@ -20,7 +22,7 @@ You can get this immediately using this docker-compose file. This brings up the 
 version: '3'
 services:
         xen-orchestra:
-                image: lautrecofcarim/alpine-xoa:latest
+                image: lautrecofcarim/alpine-xoa:aarch64latest
                 container_name: xoa
                 user: node
                 ports:
@@ -43,9 +45,9 @@ services:
 
 ## Tags
 
-`:latest` - Arm 32bit
+`:aarch64latest` - Arm 64bit
 
-`:aarch64` - Arm 64bit
+`:armhf` - Arm 32bit - last working config
 
 ## Reverse Proxy HTTPS with NGINX Configuration
 
@@ -125,7 +127,7 @@ You can modify your docker-compose file for XO to the following, as mapped host 
 version: '3'
 services:
         xen-orchestra:
-                image: lautrecofcarim/alpine-xoa:armhf
+                image: lautrecofcarim/alpine-xoa:aarch64latest
                 restart: always
                 container_name: xoa
                 user: node

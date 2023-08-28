@@ -45,9 +45,13 @@ services:
 
 ## Tags
 
+`:latest` - Arm 64bit
+
 `:aarch64latest` - Arm 64bit
 
 `:armhf` - Arm 32bit - last working config
+
+`:armlatest` - Arm 32 bit (broken)
 
 ## Reverse Proxy HTTPS with NGINX Configuration
 

@@ -1,6 +1,6 @@
 # Xen Orchestra ARM (Raspberry Pi)
 
-[![](https://img.shields.io/badge/xen--orchestra-master-green.svg)](https://xen-orchestra.com) ![](https://img.shields.io/docker/image-size/lautrecofcarim/alpine-xoa) ![](https://img.shields.io/badge/Alpine%20version-3.13-green.svg) ![](https://img.shields.io/badge/XO%20version-5.78.2-red.svg)
+[![](https://img.shields.io/badge/xen--orchestra-master-green.svg)](https://xen-orchestra.com) ![](https://img.shields.io/docker/image-size/lautrecofcarim/alpine-xoa) ![](https://img.shields.io/badge/Alpine%20version-3.18-green.svg) ![](https://img.shields.io/badge/XO%20version-5.85-red.svg)
 
 <img src="http://i.imgur.com/tRffA5y.png" width="150"> <img src="https://i.imgur.com/06fRgbd.png" width="80">
 

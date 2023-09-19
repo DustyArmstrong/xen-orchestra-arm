@@ -4,15 +4,15 @@
 
 <img src="http://i.imgur.com/tRffA5y.png" width="150"> <img src="https://i.imgur.com/06fRgbd.png" width="80">
 
+**Note - Sept 2023 - I have found from my more thorough testing that no recent version of XO will run properly on ARM, even if I can build it successfully. I would suggest using either [this](https://hub.docker.com/layers/ronivay/xen-orchestra/5.102.3/images/sha256-6a0452350e8b0be2a549fca604bd4778ebe8961caf08693eb30e42f2ebddbf98?context=explore) build or [this](https://hub.docker.com/layers/ezka77/xen-orchestra-ce/5.100/images/sha256-fbb8af8657efaf18dfeb96ed901ff77bc77b12c42ffa29ee354d73ae0905b8d1?context=explore) build if you want more recent functionality until such time ARM is supported again.**
 
+**The only working tag in this repo is _armhf_.**
 
 This is a repository for a dockerized Xen Orchestra. Build using Alpine as a base. 
 
 Currently running XO 5.78.2. 
 
 Built for Raspberry Pi 32bit and 64bit. 
-
-**Note - Aug 2023** 32 bit appears to no longer be supported. I have tested the _aarch64_ build and this is current under the _aarch64latest_ tag. The 32 bit build fails with a memory segmentation fault - the last working config is under the _armhf_ tag.
 
 ## Getting Started
 

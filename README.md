@@ -6,6 +6,7 @@
 
 **Note - Sept 2023 - I have found from my more thorough testing that no recent version of XO will run properly on ARM, even if I can build it successfully. I would suggest using either [this](https://hub.docker.com/layers/ronivay/xen-orchestra/5.102.3/images/sha256-6a0452350e8b0be2a549fca604bd4778ebe8961caf08693eb30e42f2ebddbf98?context=explore) build or [this](https://hub.docker.com/layers/ezka77/xen-orchestra-ce/5.100/images/sha256-fbb8af8657efaf18dfeb96ed901ff77bc77b12c42ffa29ee354d73ae0905b8d1?context=explore) build if you want more recent functionality until such time ARM is supported again.**
 
+**Note - Feb 2024 - Containers still don't build on ARM as of early 2024. Those looking to run the latest XO on an ARM device should try Binfmt emulation. I am having success with this using Ronivay's images. Simply run `docker run --privileged --rm tonistiigi/binfmt --install amd64` and update your `docker-compose.yaml` file to include `platform: linux/amd64` on a sufficiently powerful system (I am using a Pi4). Load averages seem very good, it is slightly slower than native but really does work.**
 
 **The only working tag in this repo is _armhf_.**
 

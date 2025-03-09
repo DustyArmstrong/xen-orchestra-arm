@@ -1,6 +1,6 @@
 # Xen Orchestra ARM (Raspberry Pi)
 
-[![](https://img.shields.io/badge/xen--orchestra-master-green.svg)](https://xen-orchestra.com) ![](https://img.shields.io/docker/image-size/lautrecofcarim/alpine-xoa) ![](https://img.shields.io/badge/Alpine%20version-3.18-green.svg) ![](https://img.shields.io/badge/XO%20version-5.85-red.svg)
+[![](https://img.shields.io/badge/xen--orchestra-master-green.svg)](https://xen-orchestra.com) ![](https://img.shields.io/docker/image-size/dustyarmstrong/alpine-xoa) ![](https://img.shields.io/badge/Alpine%20version-3.18-green.svg) ![](https://img.shields.io/badge/XO%20version-5.85-red.svg)
 
 <img src="http://i.imgur.com/tRffA5y.png" width="150"> <img src="https://i.imgur.com/06fRgbd.png" width="80">
 
@@ -24,7 +24,7 @@ You can get this immediately using this docker-compose file. This brings up the 
 version: '3'
 services:
         xen-orchestra:
-                image: lautrecofcarim/alpine-xoa:aarch64latest
+                image: dustyarmstrong/alpine-xoa:aarch64latest
                 container_name: xoa
                 user: node
                 ports:
@@ -133,7 +133,7 @@ You can modify your docker-compose file for XO to the following, as mapped host 
 version: '3'
 services:
         xen-orchestra:
-                image: lautrecofcarim/alpine-xoa:aarch64latest
+                image: dustyarmstrong/alpine-xoa:aarch64latest
                 restart: always
                 container_name: xoa
                 user: node

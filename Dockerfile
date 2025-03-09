@@ -1,23 +1,68 @@
-FROM node:18-alpine3.17 as build
+# pull alpine build container
+FROM arm64v8/node:alpine3.21 as build
 
-WORKDIR /home/node
+# Install deps
+RUN apk add --no-cache \
+    build-base \
+    python3 \
+    libpng-dev \
+    ca-certificates \
+    git \
+    fuse \
+    fuse-dev \
+    jq
 
-RUN apk update && apk upgrade && \
-    apk add --no-cache bash git build-base libstdc++ gcc yarn libpng-dev python3 g++ make libc6-compat curl
+# Pull XO from master
+RUN git clone -b master https://github.com/vatesfr/xen-orchestra /etc/xen-orchestra && \
+    git clone https://github.com/sagemathinc/fuse-native /etc/fuse-native && \
+    git clone https://github.com/fuse-friends/fuse-shared-library-linux-arm /etc/fuse-shared-library-linux
 
-RUN npm install url-loader --save-dev
+RUN cd /etc/fuse-native && \
+    jq '.name = "fuse-native"' package.json | \
+    jq '.dependencies["napi-macros"] = "^2.2.2"' > package.temp.json && \
+    mv package.temp.json package.json && \
+    yarn install --update-checksums --no-lockfile && \
+    yarn link
 
-RUN git clone -b fix_fuse_dependancy_arm --depth 1 http://github.com/vatesfr/xen-orchestra
+RUN cd /etc/fuse-shared-library-linux && \
+    jq '.name = "fuse-shared-library-linux"' package.json > package.temp.json && \
+    mv package.temp.json package.json && \
+    yarn link
+
+RUN cd /etc/xen-orchestra && \
+    jq '.devDependencies["fuse-native"] = "file:/etc/fuse-native"' package.json | \
+    jq '.devDependencies["napi-macros"] = "^2.2.2"' package.json | \
+    jq '.devDependencies["fuse-shared-library-linux"] = "file:/etc/fuse-shared-library-linux"' > package.temp.json && \
+    mv package.temp.json package.json
+
+RUN cd /etc/xen-orchestra/@vates/fuse-vhd && \
+    jq '.dependencies["fuse-native"] = "file:/etc/fuse-native"' package.json | \
+    jq '.dependencies["napi-macros"] = "^2.2.2"' > package.temp.json && \
+    cat package.temp.json && \
+    mv package.temp.json package.json && \
+    yarn install --update-checksums --no-lockfile && \
+    yarn link "fuse-native"
+
+ENV CXXFLAGS="-Wno-implicit-fallthrough"
+RUN --mount=type=cache,target=/usr/local/share/.cache cd /etc/xen-orchestra && \
+    yarn config set network-timeout 300000 && \
+    yarn link "fuse-native" && \
+    yarn link "fuse-shared-library-linux"
+RUN --mount=type=cache,target=/usr/local/share/.cache cd /etc/xen-orchestra && yarn install --verbose --update-checksums --no-lockfile
+RUN cd /etc/xen-orchestra && yarn build
+
+# Install the plugins
+RUN find /etc/xen-orchestra/packages/ -maxdepth 1 -mindepth 1 \
+    -not -name "xo-server" \
+    -not -name "xo-web" \
+    -not -name "xo-server-cloud" \
+    -not -name "xo-server-test" \
+    -not -name "xo-server-test-plugin" \
+    -exec ln -s {} /etc/xen-orchestra/packages/xo-server/node_modules \;
     
-RUN cd /home/node/xen-orchestra && yarn config set network-timeout 30000000 && yarn && yarn build
-
-COPY link_plugins.sh /home/node/xen-orchestra/packages/xo-server/link_plugins.sh
-RUN chmod +x /home/node/xen-orchestra/packages/xo-server/link_plugins.sh && \
-    /home/node/xen-orchestra/packages/xo-server/link_plugins.sh
-
-
 #LIBVHDI
-FROM node:18-alpine3.17 as build-libvhdi
+
+FROM arm64v8/node:alpine3.21 as build-libvhdi
 
 WORKDIR /home/node
 
@@ -33,43 +78,61 @@ RUN cd libvhdi && ./synclibs.sh && \
 
 ##LIBVHDI
 
-FROM node:18-alpine3.17
+FROM arm64v8/node:alpine3.21
 
-LABEL xo-server=5.7 xo-web=5.7
+MAINTAINER Dusty Armstrong <dusty@dustcloud.dev>
+LABEL org.opencontainers.image.source https://github.com/dustyarmstrong/xen-orchestra-arm
 
-ENV USER=node USER_HOME=/home/node XOA_PLAN=5 DEBUG=xo:main
-
-RUN mkdir -p /home/node
-
-WORKDIR /home/node
+# Install XO deps
 
 RUN apk add --no-cache \
-    su-exec \
-    bash \
-    util-linux \
-    nfs-utils \
+    redis \
+    python3 \
+    py3-jinja2 \
     lvm2 \
-    fuse \
-    fuse3 \
-    gettext \
+    nfs-utils \
+    net-tools \
     cifs-utils \
-    openssl
+    ca-certificates \
+    monit \
+    procps \
+    curl \
+    ntfs-3g
 
-COPY --from=build /home/node/xen-orchestra /home/node/xen-orchestra
-COPY --from=build /usr/local/bin/node /usr/bin/
-COPY --from=build /usr/lib/libgcc* /usr/lib/libstdc* /usr/lib/
+# Install forever for starting/stopping Xen-Orchestra
+RUN npm install forever -g
 
+# Copy built xen orchestra from builder
+COPY --from=build /etc/xen-orchestra /etc/xen-orchestra
+COPY --from=build /usr/local/share/.config /usr/local/share/.config
+COPY --from=build /etc/fuse-native /etc/fuse-native
+COPY --from=build /etc/fuse-shared-library-linux /etc/fuse-shared-library-linux
 COPY --from=build-libvhdi /usr/local/bin/vhdimount /usr/local/bin/vhdiinfo /usr/local/bin/
 COPY --from=build-libvhdi /usr/local/lib/libvhdi* /usr/local/lib/
+RUN rm -rf /etc/fuse-native/.git /etc/fuse-shared-library-linux/.git
 
-COPY xo-server.config.yaml /home/node/xen-orchestra/packages/xo-server/.xo-server.yaml
+# Logging
+RUN ln -sf /proc/1/fd/1 /var/log/redis/redis-server.log && \
+    ln -sf /proc/1/fd/1 /var/log/xo-server.log && \
+    ln -sf /proc/1/fd/1 /var/log/monit.log
 
-ENV REDIS_SERVER="redis" \
-    REDIS_PORT="6379"
+# Healthcheck
+ADD healthcheck.sh /healthcheck.sh
+RUN chmod +x /healthcheck.sh
+HEALTHCHECK --start-period=1m --interval=30s --timeout=5s --retries=2 CMD /healthcheck.sh
+
+# Copy xo-server configuration template
+ADD conf/xo-server.toml.j2 /xo-server.toml.j2
+
+# Copy monit configuration
+ADD conf/monit-services /etc/monit/conf.d/services
+
+# Copy startup script
+ADD start.sh /start.sh
+RUN chmod +x /start.sh
+
+WORKDIR /etc/xen-orchestra/packages/xo-server
 
 EXPOSE 80
 
-ADD start.sh /usr/local/bin/start.sh
-RUN chmod a+x /usr/local/bin/start.sh
-
-CMD ["/usr/local/bin/start.sh"]
+CMD ["/start.sh"]

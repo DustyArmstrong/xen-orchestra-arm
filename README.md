@@ -4,9 +4,9 @@
 
 <img src="http://i.imgur.com/tRffA5y.png" width="150"> <img src="https://i.imgur.com/06fRgbd.png" width="80">
 
-This is a repository for a dockerized Xen Orchestra. Build using Alpine as a base. 
+This is a repository for a dockerized Xen Orchestra. Build using Bookworm as a base, for Raspberry Pi 64-bit.
 
-Built for Raspberry Pi 64bit. 
+Major changes since the last iteration, tends to be very hit or miss whether XOA can run under ARM on a given day. 
 
 ## Getting Started
 
@@ -17,7 +17,7 @@ version: '3'
 services:
     xen-orchestra:
         restart: unless-stopped
-        image: dustyarmstrong/alpine-xoa:latest
+        image: dustyarmstrong/arm-xoa:latest
         container_name: xoa
         stop_grace_period: 1m
         ports:

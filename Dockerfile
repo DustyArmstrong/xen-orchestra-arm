@@ -1,18 +1,12 @@
-# pull alpine build container
-FROM arm64v8/node:alpine3.21 as build
+# builder container
+FROM arm64v8/node:23-bookworm as build
 
-# Install deps
-RUN apk add --no-cache \
-    build-base \
-    python3 \
-    libpng-dev \
-    ca-certificates \
-    git \
-    fuse \
-    fuse-dev \
-    jq
+# Install set of dependencies to support building Xen Orchestra
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update && \
+    apt install -y build-essential python3-minimal libpng-dev ca-certificates git fuse libfuse-dev jq
 
-# Pull XO from master
+# Fetch Xen-Orchestra sources from git stable branch
 RUN git clone -b master https://github.com/vatesfr/xen-orchestra /etc/xen-orchestra && \
     git clone https://github.com/sagemathinc/fuse-native /etc/fuse-native && \
     git clone https://github.com/fuse-friends/fuse-shared-library-linux-arm /etc/fuse-shared-library-linux
@@ -44,14 +38,23 @@ RUN cd /etc/xen-orchestra/@vates/fuse-vhd && \
     yarn link "fuse-native"
 
 ENV CXXFLAGS="-Wno-implicit-fallthrough"
-RUN --mount=type=cache,target=/usr/local/share/.cache cd /etc/xen-orchestra && \
-    yarn config set network-timeout 300000 && \
-    yarn link "fuse-native" && \
-    yarn link "fuse-shared-library-linux"
-RUN --mount=type=cache,target=/usr/local/share/.cache cd /etc/xen-orchestra && yarn install --verbose --update-checksums --no-lockfile
-RUN cd /etc/xen-orchestra && yarn build
 
-# Install the plugins
+# clean any previous install, configure yarn, then install deps
+RUN --mount=type=cache,target=/usr/local/share/.cache \
+  cd /etc/xen-orchestra && \
+  rm -rf node_modules && \
+  yarn cache clean --all || true && \
+  yarn config set network-timeout 300000 && \
+  yarn install --verbose --update-checksums --no-lockfile
+
+# link fuse packages after install (links need node_modules present), then run build
+RUN --mount=type=cache,target=/usr/local/share/.cache \
+  cd /etc/xen-orchestra && \
+  yarn link "fuse-native" && \
+  yarn link "fuse-shared-library-linux" && \
+  yarn && yarn build
+
+# Install plugins
 RUN find /etc/xen-orchestra/packages/ -maxdepth 1 -mindepth 1 \
     -not -name "xo-server" \
     -not -name "xo-web" \
@@ -59,45 +62,17 @@ RUN find /etc/xen-orchestra/packages/ -maxdepth 1 -mindepth 1 \
     -not -name "xo-server-test" \
     -not -name "xo-server-test-plugin" \
     -exec ln -s {} /etc/xen-orchestra/packages/xo-server/node_modules \;
-    
-#LIBVHDI
 
-FROM arm64v8/node:alpine3.21 as build-libvhdi
+# Runner container
+FROM arm64v8/node:23-bookworm-slim
 
-WORKDIR /home/node
+MAINTAINER Andrei Telteu <andrei@telteu.ro>
+LABEL org.opencontainers.image.source https://github.com/andreitelteu/xen-orchestra-docker-arm
 
-RUN apk add --no-cache git g++ make bash automake autoconf libtool gettext-dev pkgconf fuse-dev fuse fuse3 fuse3-dev
-
-RUN git clone https://github.com/libyal/libvhdi.git
-
-RUN cd libvhdi && ./synclibs.sh && \
-    ./autogen.sh && \
-    ./configure && \
-    make && \
-    make install
-
-##LIBVHDI
-
-FROM arm64v8/node:alpine3.21
-
-MAINTAINER Dusty Armstrong <dusty@dustcloud.dev>
-LABEL org.opencontainers.image.source https://github.com/dustyarmstrong/xen-orchestra-arm
-
-# Install XO deps
-
-RUN apk add --no-cache \
-    redis \
-    python3 \
-    py3-jinja2 \
-    lvm2 \
-    nfs-utils \
-    net-tools \
-    cifs-utils \
-    ca-certificates \
-    monit \
-    procps \
-    curl \
-    ntfs-3g
+# Install set of dependencies for running Xen Orchestra
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update && \
+    apt install -y redis-server libvhdi-utils python3-minimal python3-jinja2 lvm2 nfs-common netbase cifs-utils ca-certificates monit procps curl ntfs-3g
 
 # Install forever for starting/stopping Xen-Orchestra
 RUN npm install forever -g
@@ -107,8 +82,6 @@ COPY --from=build /etc/xen-orchestra /etc/xen-orchestra
 COPY --from=build /usr/local/share/.config /usr/local/share/.config
 COPY --from=build /etc/fuse-native /etc/fuse-native
 COPY --from=build /etc/fuse-shared-library-linux /etc/fuse-shared-library-linux
-COPY --from=build-libvhdi /usr/local/bin/vhdimount /usr/local/bin/vhdiinfo /usr/local/bin/
-COPY --from=build-libvhdi /usr/local/lib/libvhdi* /usr/local/lib/
 RUN rm -rf /etc/fuse-native/.git /etc/fuse-shared-library-linux/.git
 
 # Logging
@@ -128,11 +101,11 @@ ADD conf/xo-server.toml.j2 /xo-server.toml.j2
 ADD conf/monit-services /etc/monit/conf.d/services
 
 # Copy startup script
-ADD start.sh /start.sh
-RUN chmod +x /start.sh
+ADD run.sh /run.sh
+RUN chmod +x /run.sh
 
 WORKDIR /etc/xen-orchestra/packages/xo-server
 
 EXPOSE 80
 
-CMD ["/start.sh"]
+CMD ["/run.sh"]

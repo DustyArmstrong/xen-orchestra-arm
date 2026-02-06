@@ -1,12 +1,14 @@
 # Xen Orchestra ARM (Raspberry Pi)
 
-[![](https://img.shields.io/badge/xen--orchestra-master-green.svg)](https://xen-orchestra.com) ![](https://img.shields.io/docker/image-size/dustyarmstrong/alpine-xoa) ![](https://img.shields.io/badge/Debian%20version-Bookworm-orange.svg) ![](https://img.shields.io/badge/XO%20version-91c5d98-red.svg)
+[![](https://img.shields.io/badge/xen--orchestra-master-green.svg)](https://xen-orchestra.com) ![](https://img.shields.io/docker/image-size/dustyarmstrong/arm-xoa) ![](https://img.shields.io/badge/Debian%20version-Bookworm-orange.svg) ![](https://img.shields.io/badge/XO%20version-91c5d98-red.svg)
 
 <img src="http://i.imgur.com/tRffA5y.png" width="150"> <img src="https://i.imgur.com/06fRgbd.png" width="80">
 
-This is a repository for a dockerized Xen Orchestra. Build using Bookworm as a base, for Raspberry Pi 64-bit.
+This is a repository for a dockerized Xen Orchestra. Built using Bookworm as a base, for Raspberry Pi 64-bit (tested on Raspberry Pi 4 06/02/2026).
 
-Major changes since the last iteration, tends to be very hit or miss whether XOA can run under ARM on a given day. 
+Major changes since the last iteration, tends to be very hit or miss whether XOA can run under ARM on a given day. Highly recommend using XO V5 for the moment, V6 does not seem stable - unknown if this is upstream. 
+
+The image may or may not be updated, though if the repository becomes useful to people I will try to update the build somewhat regularly. 
 
 ## Getting Started
 
@@ -72,8 +74,6 @@ volumes:
 ## Tags
 
 `:latest` - Arm 64bit
-
-`:armhf` - Arm 32bit - a very old version of XO
 
 ## Reverse Proxy HTTPS with NGINX Configuration
 

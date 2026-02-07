@@ -1,4 +1,4 @@
-# builder container
+# builder container (updated to 23 for deps)
 FROM arm64v8/node:23-bookworm as build
 
 # Install set of dependencies to support building Xen Orchestra
@@ -11,6 +11,7 @@ RUN git clone -b master https://github.com/vatesfr/xen-orchestra /etc/xen-orches
     git clone https://github.com/sagemathinc/fuse-native /etc/fuse-native && \
     git clone https://github.com/fuse-friends/fuse-shared-library-linux-arm /etc/fuse-shared-library-linux
 
+# Buid fuse for ARM and link
 RUN cd /etc/fuse-native && \
     jq '.name = "fuse-native"' package.json | \
     jq '.dependencies["napi-macros"] = "^2.2.2"' > package.temp.json && \
@@ -66,8 +67,8 @@ RUN find /etc/xen-orchestra/packages/ -maxdepth 1 -mindepth 1 \
 # Runner container
 FROM arm64v8/node:23-bookworm-slim
 
-MAINTAINER Andrei Telteu <andrei@telteu.ro>
-LABEL org.opencontainers.image.source https://github.com/andreitelteu/xen-orchestra-docker-arm
+MAINTAINER Dusty Armstrong <dusty@dustcloud.dev>
+LABEL org.opencontainers.image.source https://github.com/DustyArmstrong/xen-orchestra-arm
 
 # Install set of dependencies for running Xen Orchestra
 ENV DEBIAN_FRONTEND=noninteractive

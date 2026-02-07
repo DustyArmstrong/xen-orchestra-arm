@@ -6,7 +6,7 @@
 
 This is a repository for a dockerized Xen Orchestra. Built using Bookworm as a base, for Raspberry Pi 64-bit (tested on Raspberry Pi 4 06/02/2026).
 
-Major changes since the last iteration, tends to be very hit or miss whether XOA can run under ARM on a given day. Highly recommend using XO V5 for the moment, V6 does not seem stable - unknown if this is upstream. 
+Major changes since the last iteration, tends to be very hit or miss whether XOA can run under ARM on a given day. If you are using an Nginx proxy, ensure `http2` is enabled to use V6.  
 
 The image may or may not be updated, though if the repository becomes useful to people I will try to update the build somewhat regularly. 
 
@@ -124,26 +124,34 @@ server {
                 internal;
         }
 }
-
 server {
-        listen 443 ssl;
-        server_name xo.your.domain;
+    listen 443 ssl http2;
+    server_name xo.yourdomain.local;
 
-        ssl_certificate /etc/nginx/certs/xo/xo.crt;
-        ssl_certificate_key /etc/nginx/certs/xo/xo.key;
+    ssl_certificate /etc/nginx/certs/xo/xo.crt;
+    ssl_certificate_key /etc/nginx/certs/xo/xokey.key;
 
-        ssl_session_cache  builtin:1000  shared:SSL:10m;
-        ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
-        ssl_ciphers HIGH:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;
-        ssl_prefer_server_ciphers on;
+    ssl_session_cache  builtin:1000  shared:SSL:10m;
+    ssl_protocols  TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;
+    ssl_prefer_server_ciphers on;
 
-        location / {
+    location / {
         proxy_pass "http://xoa:80/";
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
+        proxy_set_header Connection $http_connection;
 
-        }
+        proxy_set_header Authorization $http_authorization;
+        proxy_pass_header Authorization;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-Ip $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_set_header Connection "";
+    }
 }
 ```
 

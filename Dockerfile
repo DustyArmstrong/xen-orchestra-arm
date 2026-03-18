@@ -1,5 +1,5 @@
 # builder container (updated to 23 for deps)
-FROM arm64v8/node:23-bookworm as build
+FROM arm64v8/node:25-bookworm as build
 
 # Install set of dependencies to support building Xen Orchestra
 ENV DEBIAN_FRONTEND=noninteractive
@@ -65,7 +65,7 @@ RUN find /etc/xen-orchestra/packages/ -maxdepth 1 -mindepth 1 \
     -exec ln -s {} /etc/xen-orchestra/packages/xo-server/node_modules \;
 
 # Runner container
-FROM arm64v8/node:23-bookworm-slim
+FROM arm64v8/node:25-bookworm-slim
 
 MAINTAINER Dusty Armstrong <dusty@dustcloud.dev>
 LABEL org.opencontainers.image.source https://github.com/DustyArmstrong/xen-orchestra-arm

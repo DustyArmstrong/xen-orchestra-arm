@@ -1,6 +1,6 @@
 # Xen Orchestra ARM (Raspberry Pi)
 
-[![](https://img.shields.io/badge/xen--orchestra-master-green.svg)](https://xen-orchestra.com) ![](https://img.shields.io/docker/image-size/dustyarmstrong/arm-xoa) ![](https://img.shields.io/badge/Debian%20version-Bookworm-orange.svg) ![](https://img.shields.io/badge/XO%20version-8ecaa6d-red.svg)
+[![](https://img.shields.io/badge/xen--orchestra-master-green.svg)](https://xen-orchestra.com) ![](https://img.shields.io/docker/image-size/dustyarmstrong/arm-xoa) ![](https://img.shields.io/badge/Debian%20version-Bookworm-orange.svg) ![](https://img.shields.io/badge/XO%20version-e6443ed-red.svg)
 
 <img src="http://i.imgur.com/tRffA5y.png" width="150"> <img src="https://i.imgur.com/06fRgbd.png" width="80">
 
@@ -73,12 +73,7 @@ volumes:
 
 ## Tags
 
-`:latest` - Arm 64bit commit `8ecaa6d`
-
-`:d1736e0` - Arm 64bit commit `d1736e0`
-
-`:91c5d98` - Arm 64bit commit `91c5d98`
-
+`:latest` - Arm 64bit running XO commit `e6443ed`
 
 ## Reverse Proxy HTTPS with NGINX Configuration
 
